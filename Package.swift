@@ -24,7 +24,6 @@ let package = Package(
             cSettings: [
                 .headerSearchPath("include"),
                 .define("BUILD_FOR_IOS", to: "1"),
-                .unsafeFlags(["-std=c99"])
             ]
         ),
         // Swift target: the public API consumers use
@@ -43,5 +42,6 @@ let package = Package(
             dependencies: ["CLIPSEngine"],
             path: "Tests/CLIPSEngineTests"
         ),
-    ]
+    ],
+    cLanguageStandard: .c99
 )
