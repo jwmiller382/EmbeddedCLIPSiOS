@@ -857,7 +857,21 @@ EvalError Eval(
   {
    struct expr *top;
    bool ov;
-   static int depth = 0;
+   /* LOCAL CHANGE (2026-09-12, not upstream CLIPS): `depth` was a plain function-local
+      static, so it was shared by every thread AND every Environment in the process. Two
+      CLIPSEngine instances each serialize on their own queue, so concurrent reactors raced
+      on it: ThreadSanitizer reported it 2,000 times in a 35-test run.
+
+      The race is benign in effect -- the generated name is written to a LOCAL buffer via a
+      bounded gensnprintf, open/close therefore always pair within a call, calls within one
+      Environment are already serialized, and duplicate names across two Environments do
+      not collide because routers are per-Environment. It is still undefined behaviour, and
+      2,000 reports per run mask any real race, so it is worth removing.
+
+      __thread rather than _Thread_local because this package builds as .c99; Clang accepts
+      the extension in every mode and Apple platforms support TLS. Per-thread is sufficient:
+      the counter only has to make the router name unique among calls live at the same time. */
+   static __thread int depth = 0;
    char logicalNameBuffer[20];
    struct BindInfo *oldBinds;
    int danglingConstructs;
