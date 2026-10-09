@@ -1,0 +1,141 @@
+diff --git a/Sources/EmbeddedCLIPSiOS/include/memalloc.h b/Sources/EmbeddedCLIPSiOS/include/memalloc.h
+index 8a919b2..a77c283 100755
+--- a/Sources/EmbeddedCLIPSiOS/include/memalloc.h
++++ b/Sources/EmbeddedCLIPSiOS/include/memalloc.h
+@@ -70,7 +70,18 @@ typedef bool OutOfMemoryFunction(Environment *,size_t);
+ #define MEM_TABLE_SIZE 500
+ #endif
+ 
+-struct memoryPtr
++/* AUFBAU HARDENING (2026-10-09): the pool threads its free list THROUGH recycled blocks — a block last used as one
++ * struct type is read and written as a memoryPtr. That is type punning, which C's strict-aliasing rule lets the
++ * optimiser reorder; under -O it corrupted pool lists into CYCLES (ARM64 Linux: every small-molecule reaction hung in
++ * DeallocateFactData; x86_64 macOS: intermittent nanov2_guard_corruption_detected aborts). may_alias tells the compiler
++ * that accesses through memoryPtr may alias any type, so it cannot reorder them; -fno-strict-aliasing fixes the same
++ * hang, but SwiftPM forbids unsafeFlags in a versioned dependency, so the fix lives in the type. */
++#if defined(__GNUC__) || defined(__clang__)
++#define CLIPS_MAY_ALIAS __attribute__((__may_alias__))
++#else
++#define CLIPS_MAY_ALIAS
++#endif
++struct CLIPS_MAY_ALIAS memoryPtr
+   {
+    struct memoryPtr *next;
+   };
+diff --git a/Sources/EmbeddedCLIPSiOS/src/classcom.c b/Sources/EmbeddedCLIPSiOS/src/classcom.c
+index df49300..ca44c16 100755
+--- a/Sources/EmbeddedCLIPSiOS/src/classcom.c
++++ b/Sources/EmbeddedCLIPSiOS/src/classcom.c
+@@ -353,7 +353,7 @@ Defclass *GetNextDefclass(
+   Environment *theEnv,
+   Defclass *theDefclass)
+   {
+-   return (Defclass *) GetNextConstructItem(theEnv,&theDefclass->header,
++   return (Defclass *) GetNextConstructItem(theEnv,((theDefclass == NULL) ? NULL : &theDefclass->header),
+                                             DefclassData(theEnv)->DefclassModuleIndex);
+   }
+ 
+diff --git a/Sources/EmbeddedCLIPSiOS/src/defins.c b/Sources/EmbeddedCLIPSiOS/src/defins.c
+index ccbbb04..6c43d46 100755
+--- a/Sources/EmbeddedCLIPSiOS/src/defins.c
++++ b/Sources/EmbeddedCLIPSiOS/src/defins.c
+@@ -377,7 +377,7 @@ Definstances *GetNextDefinstances(
+   Environment *theEnv,
+   Definstances *theDefinstances)
+   {
+-   return (Definstances *) GetNextConstructItem(theEnv,&theDefinstances->header,
++   return (Definstances *) GetNextConstructItem(theEnv,((theDefinstances == NULL) ? NULL : &theDefinstances->header),
+                                                 DefinstancesData(theEnv)->DefinstancesModuleIndex);
+   }
+ 
+diff --git a/Sources/EmbeddedCLIPSiOS/src/dffctdef.c b/Sources/EmbeddedCLIPSiOS/src/dffctdef.c
+index a30e1a4..7dd45b3 100755
+--- a/Sources/EmbeddedCLIPSiOS/src/dffctdef.c
++++ b/Sources/EmbeddedCLIPSiOS/src/dffctdef.c
+@@ -349,7 +349,7 @@ Deffacts *GetNextDeffacts(
+   Environment *theEnv,
+   Deffacts *deffactsPtr)
+   {
+-   return (Deffacts *) GetNextConstructItem(theEnv,&deffactsPtr->header,DeffactsData(theEnv)->DeffactsModuleIndex);
++   return (Deffacts *) GetNextConstructItem(theEnv,((deffactsPtr == NULL) ? NULL : &deffactsPtr->header),DeffactsData(theEnv)->DeffactsModuleIndex);
+   }
+ 
+ /*******************************************************/
+diff --git a/Sources/EmbeddedCLIPSiOS/src/dffnxfun.c b/Sources/EmbeddedCLIPSiOS/src/dffnxfun.c
+index bc9c26c..9a722d1 100755
+--- a/Sources/EmbeddedCLIPSiOS/src/dffnxfun.c
++++ b/Sources/EmbeddedCLIPSiOS/src/dffnxfun.c
+@@ -470,7 +470,7 @@ Deffunction *GetNextDeffunction(
+   Deffunction *theDeffunction)
+   {
+    return (Deffunction *)
+-          GetNextConstructItem(theEnv,&theDeffunction->header,
++          GetNextConstructItem(theEnv,((theDeffunction == NULL) ? NULL : &theDeffunction->header),
+                                DeffunctionData(theEnv)->DeffunctionModuleIndex);
+   }
+ 
+diff --git a/Sources/EmbeddedCLIPSiOS/src/genrccom.c b/Sources/EmbeddedCLIPSiOS/src/genrccom.c
+index 3eed1e9..68b0675 100755
+--- a/Sources/EmbeddedCLIPSiOS/src/genrccom.c
++++ b/Sources/EmbeddedCLIPSiOS/src/genrccom.c
+@@ -471,7 +471,7 @@ Defgeneric *GetNextDefgeneric(
+   Environment *theEnv,
+   Defgeneric *theDefgeneric)
+   {
+-   return (Defgeneric *) GetNextConstructItem(theEnv,&theDefgeneric->header,DefgenericData(theEnv)->DefgenericModuleIndex);
++   return (Defgeneric *) GetNextConstructItem(theEnv,((theDefgeneric == NULL) ? NULL : &theDefgeneric->header),DefgenericData(theEnv)->DefgenericModuleIndex);
+   }
+ 
+ /***********************************************************
+diff --git a/Sources/EmbeddedCLIPSiOS/src/globldef.c b/Sources/EmbeddedCLIPSiOS/src/globldef.c
+index 5496331..a6bfa7d 100755
+--- a/Sources/EmbeddedCLIPSiOS/src/globldef.c
++++ b/Sources/EmbeddedCLIPSiOS/src/globldef.c
+@@ -340,7 +340,7 @@ Defglobal *GetNextDefglobal(
+   Environment *theEnv,
+   Defglobal *defglobalPtr)
+   {
+-   return (Defglobal *) GetNextConstructItem(theEnv,&defglobalPtr->header,DefglobalData(theEnv)->DefglobalModuleIndex);
++   return (Defglobal *) GetNextConstructItem(theEnv,((defglobalPtr == NULL) ? NULL : &defglobalPtr->header),DefglobalData(theEnv)->DefglobalModuleIndex);
+   }
+ 
+ /********************************************************/
+diff --git a/Sources/EmbeddedCLIPSiOS/src/ruledef.c b/Sources/EmbeddedCLIPSiOS/src/ruledef.c
+index 42bd52e..ad54550 100755
+--- a/Sources/EmbeddedCLIPSiOS/src/ruledef.c
++++ b/Sources/EmbeddedCLIPSiOS/src/ruledef.c
+@@ -350,7 +350,7 @@ Defrule *GetNextDefrule(
+   Environment *theEnv,
+   Defrule *defrulePtr)
+   {
+-   return (Defrule *) GetNextConstructItem(theEnv,&defrulePtr->header,DefruleData(theEnv)->DefruleModuleIndex);
++   return (Defrule *) GetNextConstructItem(theEnv,((defrulePtr == NULL) ? NULL : &defrulePtr->header),DefruleData(theEnv)->DefruleModuleIndex);
+   }
+ 
+ /******************************************************/
+diff --git a/Sources/EmbeddedCLIPSiOS/src/tabledef.c b/Sources/EmbeddedCLIPSiOS/src/tabledef.c
+index 3c814bb..c18c755 100755
+--- a/Sources/EmbeddedCLIPSiOS/src/tabledef.c
++++ b/Sources/EmbeddedCLIPSiOS/src/tabledef.c
+@@ -366,7 +366,7 @@ Deftable *GetNextDeftable(
+   Environment *theEnv,
+   Deftable *deftablePtr)
+   {
+-   return (Deftable *) GetNextConstructItem(theEnv,&deftablePtr->header,DeftableData(theEnv)->DeftableModuleIndex);
++   return (Deftable *) GetNextConstructItem(theEnv,((deftablePtr == NULL) ? NULL : &deftablePtr->header),DeftableData(theEnv)->DeftableModuleIndex);
+   }
+ 
+ /*******************************************************/
+diff --git a/Sources/EmbeddedCLIPSiOS/src/tmpltdef.c b/Sources/EmbeddedCLIPSiOS/src/tmpltdef.c
+index 6059f22..31d9d45 100755
+--- a/Sources/EmbeddedCLIPSiOS/src/tmpltdef.c
++++ b/Sources/EmbeddedCLIPSiOS/src/tmpltdef.c
+@@ -316,7 +316,7 @@ Deftemplate *GetNextDeftemplate(
+   Environment *theEnv,
+   Deftemplate *deftemplatePtr)
+   {
+-   return (Deftemplate *) GetNextConstructItem(theEnv,&deftemplatePtr->header,DeftemplateData(theEnv)->DeftemplateModuleIndex);
++   return (Deftemplate *) GetNextConstructItem(theEnv,((deftemplatePtr == NULL) ? NULL : &deftemplatePtr->header),DeftemplateData(theEnv)->DeftemplateModuleIndex);
+   }
+ 
+ /**********************************************************/
