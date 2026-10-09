@@ -74,6 +74,28 @@ index bc9c26c..9a722d1 100755
                                 DeffunctionData(theEnv)->DeffunctionModuleIndex);
    }
  
+diff --git a/Sources/EmbeddedCLIPSiOS/src/facthsh.c b/Sources/EmbeddedCLIPSiOS/src/facthsh.c
+index 9f56855..0ac5b23 100755
+--- a/Sources/EmbeddedCLIPSiOS/src/facthsh.c
++++ b/Sources/EmbeddedCLIPSiOS/src/facthsh.c
+@@ -114,7 +114,7 @@ size_t HashFact(
+    /* Get a hash value for the deftemplate name. */
+    /*============================================*/
+ 
+-   count += theFact->whichDeftemplate->header.name->bucket * 73981;
++   count += (size_t) theFact->whichDeftemplate->header.name->bucket * 73981;   /* AUFBAU HARDENING: widen first — bucket is an unsigned:29 bitfield promoted to int, so the product overflowed int (UB, UBSan) */
+ 
+    /*=====================================================*/
+    /* Add in the hash value for the rest of the fact. The */
+@@ -155,7 +155,7 @@ size_t HashValueArrayFact(
+    /* Get a hash value for the deftemplate name. */
+    /*============================================*/
+ 
+-   count += theDeftemplate->header.name->bucket * 73981;
++   count += (size_t) theDeftemplate->header.name->bucket * 73981;   /* AUFBAU HARDENING: see HashFact */
+ 
+    /*=================================================*/
+    /* Add in the hash value for the rest of the fact. */
 diff --git a/Sources/EmbeddedCLIPSiOS/src/genrccom.c b/Sources/EmbeddedCLIPSiOS/src/genrccom.c
 index 3eed1e9..68b0675 100755
 --- a/Sources/EmbeddedCLIPSiOS/src/genrccom.c

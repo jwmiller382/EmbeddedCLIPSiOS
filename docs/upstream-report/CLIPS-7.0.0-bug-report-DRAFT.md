@@ -1,4 +1,4 @@
-# CLIPS 7.0.0: environment hangs under -O2 (strict-aliasing in the memory pool) + NULL `&ptr->header` in GetNext* functions
+# CLIPS 7.0.0: environment hangs under -O2 (strict-aliasing in the memory pool), plus two undefined-behaviour sites
 
 *DRAFT for John to review and send. Suggested channel: the CLIPS project on SourceForge (clipsrules — Discussion ▸ Help,
 or the bug tracker), addressed to the maintainer. Attach `clips7_pool_repro.c` and `clips7_fix.patch` from this folder.*
@@ -78,6 +78,19 @@ return (Defclass *) GetNextConstructItem(theEnv,((theDefclass == NULL) ? NULL : 
 This one did not by itself cause the hang (`-fno-delete-null-pointer-checks` did not cure it), but it is real UB on
 every environment creation.
 
+## 3. Undefined behaviour: signed overflow in the fact hash
+
+UndefinedBehaviorSanitizer:
+
+```
+facthsh.c:117: runtime error: signed integer overflow: 49676 * 73981 cannot be represented in type 'int'
+  HashFact
+```
+
+`bucket` is an `unsigned int : 29` bitfield, which C promotes to `int`, so `bucket * 73981` is a SIGNED multiply and
+overflows for buckets above ~29,000. The same expression is in the deftemplate hash in the same file (line 158).
+Suggested form: `count += (size_t) theFact->whichDeftemplate->header.name->bucket * 73981;`
+
 ## Reproduction
 
 `clips7_pool_repro.c` (attached): two deftemplates, one rule, six facts, `Run`, `DestroyEnvironment`, in a loop.
@@ -88,7 +101,7 @@ cc -O2 -std=c99 -I<clips>/include <clips>/src/*.c clips7_pool_repro.c -lm -o rep
 ```
 
 Our copy of the sources has small local changes (a thread-local Eval depth counter, a platform define), so the attached
-patch may need minor offsets against your tree; the two changes above are the whole fix.
+patch may need minor offsets against your tree; the changes above are the whole fix.
 
 Thank you for CLIPS — it has been a dependable foundation for our work.
 
