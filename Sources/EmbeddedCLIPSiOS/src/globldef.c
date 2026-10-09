@@ -340,7 +340,7 @@ Defglobal *GetNextDefglobal(
   Environment *theEnv,
   Defglobal *defglobalPtr)
   {
-   return (Defglobal *) GetNextConstructItem(theEnv,&defglobalPtr->header,DefglobalData(theEnv)->DefglobalModuleIndex);
+   return (Defglobal *) GetNextConstructItem(theEnv,((defglobalPtr == NULL) ? NULL : &defglobalPtr->header),DefglobalData(theEnv)->DefglobalModuleIndex);
   }
 
 /********************************************************/

@@ -349,7 +349,7 @@ Deffacts *GetNextDeffacts(
   Environment *theEnv,
   Deffacts *deffactsPtr)
   {
-   return (Deffacts *) GetNextConstructItem(theEnv,&deffactsPtr->header,DeffactsData(theEnv)->DeffactsModuleIndex);
+   return (Deffacts *) GetNextConstructItem(theEnv,((deffactsPtr == NULL) ? NULL : &deffactsPtr->header),DeffactsData(theEnv)->DeffactsModuleIndex);
   }
 
 /*******************************************************/

@@ -316,7 +316,7 @@ Deftemplate *GetNextDeftemplate(
   Environment *theEnv,
   Deftemplate *deftemplatePtr)
   {
-   return (Deftemplate *) GetNextConstructItem(theEnv,&deftemplatePtr->header,DeftemplateData(theEnv)->DeftemplateModuleIndex);
+   return (Deftemplate *) GetNextConstructItem(theEnv,((deftemplatePtr == NULL) ? NULL : &deftemplatePtr->header),DeftemplateData(theEnv)->DeftemplateModuleIndex);
   }
 
 /**********************************************************/

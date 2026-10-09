@@ -366,7 +366,7 @@ Deftable *GetNextDeftable(
   Environment *theEnv,
   Deftable *deftablePtr)
   {
-   return (Deftable *) GetNextConstructItem(theEnv,&deftablePtr->header,DeftableData(theEnv)->DeftableModuleIndex);
+   return (Deftable *) GetNextConstructItem(theEnv,((deftablePtr == NULL) ? NULL : &deftablePtr->header),DeftableData(theEnv)->DeftableModuleIndex);
   }
 
 /*******************************************************/

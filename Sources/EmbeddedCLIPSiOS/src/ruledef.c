@@ -350,7 +350,7 @@ Defrule *GetNextDefrule(
   Environment *theEnv,
   Defrule *defrulePtr)
   {
-   return (Defrule *) GetNextConstructItem(theEnv,&defrulePtr->header,DefruleData(theEnv)->DefruleModuleIndex);
+   return (Defrule *) GetNextConstructItem(theEnv,((defrulePtr == NULL) ? NULL : &defrulePtr->header),DefruleData(theEnv)->DefruleModuleIndex);
   }
 
 /******************************************************/

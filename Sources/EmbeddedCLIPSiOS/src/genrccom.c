@@ -471,7 +471,7 @@ Defgeneric *GetNextDefgeneric(
   Environment *theEnv,
   Defgeneric *theDefgeneric)
   {
-   return (Defgeneric *) GetNextConstructItem(theEnv,&theDefgeneric->header,DefgenericData(theEnv)->DefgenericModuleIndex);
+   return (Defgeneric *) GetNextConstructItem(theEnv,((theDefgeneric == NULL) ? NULL : &theDefgeneric->header),DefgenericData(theEnv)->DefgenericModuleIndex);
   }
 
 /***********************************************************

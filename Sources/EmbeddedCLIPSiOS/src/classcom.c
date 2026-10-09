@@ -353,7 +353,7 @@ Defclass *GetNextDefclass(
   Environment *theEnv,
   Defclass *theDefclass)
   {
-   return (Defclass *) GetNextConstructItem(theEnv,&theDefclass->header,
+   return (Defclass *) GetNextConstructItem(theEnv,((theDefclass == NULL) ? NULL : &theDefclass->header),
                                             DefclassData(theEnv)->DefclassModuleIndex);
   }
 

@@ -70,7 +70,18 @@ typedef bool OutOfMemoryFunction(Environment *,size_t);
 #define MEM_TABLE_SIZE 500
 #endif
 
-struct memoryPtr
+/* AUFBAU HARDENING (2026-10-09): the pool threads its free list THROUGH recycled blocks — a block last used as one
+ * struct type is read and written as a memoryPtr. That is type punning, which C's strict-aliasing rule lets the
+ * optimiser reorder; under -O it corrupted pool lists into CYCLES (ARM64 Linux: every small-molecule reaction hung in
+ * DeallocateFactData; x86_64 macOS: intermittent nanov2_guard_corruption_detected aborts). may_alias tells the compiler
+ * that accesses through memoryPtr may alias any type, so it cannot reorder them; -fno-strict-aliasing fixes the same
+ * hang, but SwiftPM forbids unsafeFlags in a versioned dependency, so the fix lives in the type. */
+#if defined(__GNUC__) || defined(__clang__)
+#define CLIPS_MAY_ALIAS __attribute__((__may_alias__))
+#else
+#define CLIPS_MAY_ALIAS
+#endif
+struct CLIPS_MAY_ALIAS memoryPtr
   {
    struct memoryPtr *next;
   };

@@ -377,7 +377,7 @@ Definstances *GetNextDefinstances(
   Environment *theEnv,
   Definstances *theDefinstances)
   {
-   return (Definstances *) GetNextConstructItem(theEnv,&theDefinstances->header,
+   return (Definstances *) GetNextConstructItem(theEnv,((theDefinstances == NULL) ? NULL : &theDefinstances->header),
                                                 DefinstancesData(theEnv)->DefinstancesModuleIndex);
   }
 

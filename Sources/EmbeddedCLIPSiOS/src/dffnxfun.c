@@ -470,7 +470,7 @@ Deffunction *GetNextDeffunction(
   Deffunction *theDeffunction)
   {
    return (Deffunction *)
-          GetNextConstructItem(theEnv,&theDeffunction->header,
+          GetNextConstructItem(theEnv,((theDeffunction == NULL) ? NULL : &theDeffunction->header),
                                DeffunctionData(theEnv)->DeffunctionModuleIndex);
   }
 
