@@ -114,7 +114,7 @@ size_t HashFact(
    /* Get a hash value for the deftemplate name. */
    /*============================================*/
 
-   count += theFact->whichDeftemplate->header.name->bucket * 73981;
+   count += (size_t) theFact->whichDeftemplate->header.name->bucket * 73981;   /* AUFBAU HARDENING: widen first — bucket is an unsigned:29 bitfield promoted to int, so the product overflowed int (UB, UBSan) */
 
    /*=====================================================*/
    /* Add in the hash value for the rest of the fact. The */
@@ -155,7 +155,7 @@ size_t HashValueArrayFact(
    /* Get a hash value for the deftemplate name. */
    /*============================================*/
 
-   count += theDeftemplate->header.name->bucket * 73981;
+   count += (size_t) theDeftemplate->header.name->bucket * 73981;   /* AUFBAU HARDENING: see HashFact */
 
    /*=================================================*/
    /* Add in the hash value for the rest of the fact. */
