@@ -1,6 +1,14 @@
 import Foundation
 import CEmbeddedCLIPS
 
+#if os(WASI)
+/// WebAssembly (WASI) is single-threaded and ships no Dispatch: a serial queue is just a direct call.
+struct DispatchQueue {
+    init(label: String) {}
+    func sync<T>(execute work: () throws -> T) rethrows -> T { try work() }
+}
+#endif
+
 /// A Swift-native interface to the CLIPS expert-system engine.
 ///
 /// Each `CLIPSEngine` instance owns its own CLIPS environment and runs
