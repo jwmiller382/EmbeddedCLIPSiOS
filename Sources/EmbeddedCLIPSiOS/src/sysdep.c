@@ -300,7 +300,11 @@ void genexit(
   int num)
   {
    if (SystemDependentData(theEnv)->jmpBuffer != NULL)
+#if defined(__wasi__)
+     { abort(); }
+#else
      { longjmp(*SystemDependentData(theEnv)->jmpBuffer,1); }
+#endif
 
    exit(num);
   }

@@ -115,7 +115,13 @@
 #define _H_sysdep
 
 #include <stdio.h>
+#if defined(__wasi__)
+/* WebAssembly (WASI): setjmp/longjmp need the not-yet-standard exception-handling proposal. CLIPS uses them only for
+   genexit after an embedder arms SetJmpBuffer; Aufbau never does. A placeholder type keeps the API; genexit aborts. */
+typedef int jmp_buf[1];
+#else
 #include <setjmp.h>
+#endif
 
    double                      gentime(void);
 #if SYSTEM_FUNCTION
