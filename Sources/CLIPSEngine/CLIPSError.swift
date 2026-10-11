@@ -1,4 +1,8 @@
+#if os(WASI)
+import FoundationEssentials   // WebAssembly: no ICU / CoreFoundation
+#else
 import Foundation
+#endif
 
 /// Errors thrown by ``CLIPSEngine`` operations.
 ///

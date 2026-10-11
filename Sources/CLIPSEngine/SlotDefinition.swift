@@ -1,4 +1,8 @@
+#if os(WASI)
+import FoundationEssentials   // WebAssembly: no ICU / CoreFoundation
+#else
 import Foundation
+#endif
 
 /// Describes a slot in a CLIPS deftemplate.
 ///

@@ -1,4 +1,8 @@
+#if os(WASI)
+import FoundationEssentials   // WebAssembly: no ICU / CoreFoundation
+#else
 import Foundation
+#endif
 
 /// A type-safe representation of a value in the CLIPS engine.
 ///
