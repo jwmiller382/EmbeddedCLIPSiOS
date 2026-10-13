@@ -1,4 +1,4 @@
-#if os(WASI)
+#if os(WASI) || os(Android)
 import FoundationEssentials   // WebAssembly: no ICU / CoreFoundation
 #else
 import Foundation

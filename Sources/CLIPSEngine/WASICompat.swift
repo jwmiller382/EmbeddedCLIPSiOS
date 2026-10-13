@@ -1,5 +1,5 @@
 //  WASICompat.swift — WebAssembly only: the string helpers CLIPSEngine used from Foundation, which FoundationEssentials lacks.
-#if os(WASI)
+#if os(WASI) || os(Android) || os(Android)
 import FoundationEssentials
 
 /// The character classes trimmed and split by (FoundationEssentials has no CharacterSet).

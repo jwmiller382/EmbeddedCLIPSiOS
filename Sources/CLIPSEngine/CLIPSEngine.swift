@@ -1,9 +1,12 @@
-#if os(WASI)
+#if os(WASI) || os(Android)
 import FoundationEssentials   // WebAssembly: no ICU / CoreFoundation
 #else
 import Foundation
 #endif
 import CEmbeddedCLIPS
+#if os(Android)
+import Dispatch               // Foundation re-exported it; FoundationEssentials does not
+#endif
 
 #if os(WASI)
 /// WebAssembly (WASI) is single-threaded and ships no Dispatch: a serial queue is just a direct call.
